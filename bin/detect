@@ -1,0 +1,16 @@
+#!/bin/bash
+set -e
+echo "=== Detect script starting==="
+appDir=$1
+cacheDir=$2
+echo "appDir = " $appDir
+echo "cacheDir = " $cacheDir
+
+if [ -f $1/pom.xml ];
+then
+	echo "Found pom. Looks like maven allright"
+	exit 0
+else
+	echo "No pom! FAIL"
+	exit 1
+fi

@@ -1,0 +1,158 @@
+#!/bin/bash
+set -e
+
+##############################################################################################
+# options
+##############################################################################################
+ 
+mvnUrl=http://www-us.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
+jdkUrl=http://jdk-distros.cfapps.io/jdk-8u101-linux-x64.tar.gz
+##############################################################################################
+# basic setup
+##############################################################################################
+
+echo "==== compile script starting ===="
+workDir=`pwd`
+appDir=$1
+cacheDir=$2
+scriptDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+buildpackDir=${scriptDir}/..
+nodejsInstallDir=${scriptDir}
+
+echo "workDir = " $workDir
+echo "appDir = " $appDir
+echo "cacheDir = " $cacheDir
+echo "scriptDir = " $scriptDir
+echo "=== ls -la ======="
+ls -la
+echo "=== ls -la $scriptDir ==="
+ls -la $scriptDir
+echo "=== ls -la buildpackDir"
+ls -la ${scriptDir}/..
+echo "====================="
+
+mkdir -p $cacheDir
+
+
+#############################################################################################
+# JDK setup
+#############################################################################################
+echo ===== setting up JDK =====
+cd $cacheDir
+if [ -f jdk.tar.gz ]; then
+    echo "Found jdk in cache"
+else
+    wget $jdkUrl -O jdk.tar.gz # would be nice to use -N but it doesn't work for this url.
+fi
+
+cd ${appDir}
+mkdir jdk
+cd jdk
+echo "Unzipping to " `pwd`
+tar xzf ${cacheDir}/jdk.tar.gz
+
+javaDirName=`ls` # there should be just one sub dir here so this shoud work to find its name.
+echo "javaDirName = " $javaDirName
+export JAVA_HOME=$appDir/jdk/$javaDirName
+export PATH=${PATH}:${JAVA_HOME}/bin
+
+echo "----- JDK setup summary ------"
+echo JAVA_HOME=$JAVA_HOME
+echo export JAVA_HOME=$JAVA_HOME > java_home.sh
+
+##############################################################################################
+# Unpack the app
+##############################################################################################
+
+echo "Unpacking appJar = $appJar"
+appJar=`ls ${appDir}/target/*.jar`
+mkdir -p ${appDir}/classpath
+pushd ${appDir}/classpath
+jar xvf ${appJar}
+popd
+rm -fr ${appDir}/target
+
+##############################################################################################
+# Set env vars for the app's runtime
+##############################################################################################
+
+profileFile=${appDir}/.profile
+touch ${profileFile}
+echo export JAVA_HOME=${HOME}/app/jdk/${javaDirName} >> ${profileFile}
+echo export KDV_TEST=kris-test >> ${profileFile}
+
+##############################################################################################
+# Add Extra Jars on the classpath
+##############################################################################################
+cd ${scriptDir}
+chmod a+x extra-jars.sh
+./extra-jars.sh $appDir $cacheDir
+
+##############################################################################################
+# MVN setup
+##############################################################################################
+
+#echo ==== setting up mvn =====
+#cd $cacheDir
+#if [ -f mvn.tar.gz ]; then
+#    echo "Found mvn in cache"
+#else
+#    wget $mvnUrl -O mvn.tar.gz
+#    mkdir mvn
+#    cd mvn
+#    tar xzf ${cacheDir}/mvn.tar.gz
+#fi
+#
+#mvn=${cacheDir}/mvn/*/bin/mvn
+
+# do we need put maven local in some place other than default?
+# Answer: no because it seems to work just fine with the default location.
+
+#echo "----- MVN setup summary ------"
+#$mvn --version
+
+##############################################################################################
+# mvn package
+##############################################################################################
+
+#echo "==== run: mvn package ================================================================="
+#cd $appDir
+#echo "PWD = " `pwd`
+#$mvn --batch-mode clean package
+
+##############################################################################################
+# Node.js setup
+##############################################################################################
+cd ${nodejsInstallDir}
+echo "==== running Node.js installation script ==================================================="
+chmod a+x nodejs_install.sh
+./nodejs_install.sh $appDir $cacheDir
+
+##############################################################################################
+# generate release.yml
+##############################################################################################
+
+echo "==== generating start.sh file ======================================================"
+
+cd ${appDir}
+
+cp ${buildpackDir}/start.sh start.sh
+chmod a+x start.sh
+
+echo "==== generating release.yml file ==================================================="
+echo "default_process_types:" > ${appDir}/release.yml
+echo "  web: \$HOME/start.sh" >>  ${appDir}/release.yml
+
+echo "--- release.yml ---"
+cat release.yml
+echo "--- release.yml ---"
+
+#cd $appDir/target
+#echo "=== target dir contents looks ok? ==="
+#echo "PWD = " `pwd`
+#find . -print
+#echo "=== target dir contents looks ok? ==="
+
+echo "=== compile script END ==="
+
+

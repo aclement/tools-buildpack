@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+#echo "==== release script starting ===="
+appDir=$1
+#source ${appDir}/java_home.sh # sets JAVA_HOME
+#echo "appDir = " $appDir
+#echo "cacheDir = " $cacheDir
+
+cat $appDir/release.yml

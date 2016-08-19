@@ -19,9 +19,9 @@ Notes on classpath additions:
 
 Accessing the application:
 - Visiting / will give you the application as normal
-- Visiting /ide will give you an editor for the application
+- Visiting /ide/ will give you an editor for the application. *Note the need for the trailing slash!!*
 
 Upon saving in the IDE javac will run and when the class file on disk is updated, devtools will notice and restart the application.
 
 Notes:
-- using devtools the app will be going up and down as it restarts. If the CF health check runs whilst it is restarting it may think the app is dead and kill the instance entirely. Turn off the health check with `cf set-health-check andy1 none`.
+- using devtools the app will be going up and down as it restarts. If the CF health check runs whilst it is restarting it may think the app is dead and kill the instance entirely. Turn off the health check with `cf set-health-check toolsdemo none`.

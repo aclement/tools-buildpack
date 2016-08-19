@@ -2,7 +2,7 @@
 
 Expected to be used when pushing a folder containing a built boot app plus sources, push should be done from root folder. For example:
 
-    cf push -p . -n andy1 -m 2G -b https://github.com/aclement/tools-buildpack
+    cf push toolsdemo -p . -m 2G -b https://github.com/aclement/tools-buildpack
 
 Then it:
 - Lays out a filesystem containing the unpacked Spring Boot application with the sources alongside

@@ -30,5 +30,6 @@ echo "NPM version: " `./bin/npm -v`
 cd ${appDir}
 mkdir node_modules
 echo "Installing Orion via npm"
-${nodeDir}/bin/npm install https://github.com/kdvolder/orion-duck-tape
+#${nodeDir}/bin/npm install https://github.com/kdvolder/orion-duck-tape
+${nodeDir}/bin/npm install https://github.com/aclement/orion-duck-tape
 
